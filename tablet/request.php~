@@ -1,0 +1,23 @@
+<?php
+require_once "../config.inc.php";
+echo "european championship:13\n";
+echo "Nage No Kata:1\n";
+echo "F:57\n";
+echo "formid:391\n";
+echo "numTechniques:17\n";
+
+$sql="SELECT * FROM form
+	INNER JOIN pair ON form.pair=pair.idPair
+	INNER JOIN poule ON pair.poule=poule.idPoule
+	INNER JOIN katatype ON poule.katatype=katatype.idKatatype
+	WHERE idForm='396'";
+$result=mysql_query($sql);
+$row=mysql_fetch_array($result);
+for($i=0; $i<17; $i++)
+{
+	echo $row["t".($i+1)];
+	echo ":";
+	echo $row["p".($i+1)];
+	echo "\n";
+}
+?>

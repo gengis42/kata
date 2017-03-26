@@ -1,0 +1,53 @@
+var stop; //0=attivo 1=fermo
+var num; //numero di elementi da mischiare
+var vet; //vettore con i numeri da 1 a num
+var mixed;
+
+shuffle = function(v){
+    for(var j, x, i = v.length; i; j = parseInt(Math.random() * i), x = v[--i], v[i] = v[j], v[j] = x);
+    return v;
+};
+
+function initCrono()
+{
+	stop=1;
+	//var theForm = document.getElementById("formRandom");
+	//var inputElements = document.forms[0].elements["randomNum[]"];
+	//num = inputElements.length;
+	num = document.getElementById('countRandomNum').value;
+	vet = new Array(num);
+	for(var i=0; i<num; i++)
+		vet[i]=i+1;
+}
+
+function crono()
+{
+	if (stop==0) {
+		mixed = shuffle(vet);
+		for (var i = 0; i < mixed.length; i++) {
+	  		document.getElementById("randomNum"+i).value=mixed[i];
+		}
+		setTimeout("crono()", 50);
+	}
+}
+
+function startStopCrono()
+{
+	
+	if (stop==1)
+	{
+		stop=0;
+		crono();
+		document.getElementById("startStopButton").value='stop';
+	}
+	else
+	{
+		stop=1;
+		document.getElementById("startStopButton").value='start';
+	}
+	alert('asd');
+}
+
+
+
+

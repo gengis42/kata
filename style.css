@@ -1,0 +1,86 @@
+body
+{
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size:14px;
+
+}
+td
+{
+	padding:5px;
+	/*padding:0px;*/
+}
+table
+{
+	border-collapse:collapse;
+}
+table, th, td
+{
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size:14px;
+	border: 1px solid black;
+	padding:2px;
+}
+tr:first-child {
+	background-color: #97bc0c;
+}
+
+/********loghi*********/
+div.logos{
+	background-color: #FFFF99;
+  
+  	position:absolute;
+  	bottom: 10px;
+    left:1%;
+    right:1%;
+    width:98%;
+}
+tr.logos:first-child {
+	background-color: transparent;
+}
+td.logos {
+	padding:0px 25px 0px 25px;
+}
+table.logos,td.logos,tr.logos {
+	border: none;
+}
+/********banner*********/
+tr.banner:first-child {
+	background-color: transparent;
+}
+table.banner,td.banner,tr.banner, h1.banner, h3.banner {
+	padding:0 0 0 0;
+	margin:5px 0px 5px 0px;
+	border: none;
+}
+/********normal table*********/
+tr.normal:first-child {
+	background-color: transparent;
+}
+table.normal,td.normal,tr.normal {
+	border: none;
+}
+
+
+/********************top bar**********/
+div.topbar{
+	margin: -8px -8px 0px -8px;
+    background:#C0C0C0;
+    border:0px;
+    padding:0px;
+    font-family:Arial;
+    
+    
+}
+tr.topbar:first-child {
+	background:#C0C0C0;
+}
+table.topbar,td.topbar,tr.topbar {
+	border: none;
+	font-size:12px;
+}
+
+/*.edit_tr:hover
+{
+	background:url(edit.png) right no-repeat #80C8E5;
+	cursor:pointer;
+}*/

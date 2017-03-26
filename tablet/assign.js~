@@ -1,0 +1,40 @@
+function updateSelect(group)
+{
+	if (window.XMLHttpRequest)// code for IE7+, Firefox, Chrome, Opera, Safari
+	  xmlhttp=new XMLHttpRequest();
+	else// code for IE6, IE5
+	  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	//estraggo indici dal database con ajax
+	
+	xmlhttp.onreadystatechange=function()
+	{
+		if (xmlhttp.readyState==4 && xmlhttp.status==200)
+		{
+			document.getElementById("device0").innerHTML = xmlhttp.responseText;
+			document.getElementById("device1").innerHTML = xmlhttp.responseText;
+			document.getElementById("device2").innerHTML = xmlhttp.responseText;
+			//document.getElementById("device3").innerHTML = xmlhttp.responseText;
+			//document.getElementById("device4").innerHTML = xmlhttp.responseText;
+			
+			document.getElementById('device0').selectedIndex = 1;
+			document.getElementById('device1').selectedIndex = 2;
+			document.getElementById('device2').selectedIndex = 3;
+			//document.getElementById('device3').selectedIndex = 4;
+			//document.getElementById('device4').selectedIndex = 5;
+		}
+	}
+	xmlhttp.open("GET","ajax/ajax_updateTgroup.php?id="+group,true);
+	xmlhttp.send();
+
+}
+	
+function quick()
+{
+	///non è più usata
+	document.getElementById('device0').selectedIndex = 1;
+	document.getElementById('device1').selectedIndex = 2;
+	document.getElementById('device2').selectedIndex = 3;
+	document.getElementById('device3').selectedIndex = 4;
+	document.getElementById('device4').selectedIndex = 5;
+	
+}

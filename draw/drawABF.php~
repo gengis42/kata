@@ -1,0 +1,251 @@
+<?php
+require_once "../config.inc.php";
+require_once "../function.php";
+
+if(isset($_POST["validateandmakeforms"]))
+{
+	//controllo che non sia già stato validato
+	$sql="SELECT * FROM form
+	INNER JOIN pair ON form.pair=pair.idPair
+	INNER JOIN judoka ON pair.judoka=judoka.idJudoka
+	WHERE katatype='".$_GET["idKatatype"]."' AND tournament='".$_COOKIE["idTournament"]."' AND type='F'";
+	$result=mysql_query($sql);
+	if(mysql_num_rows($result)==0)
+	{
+		//inserisco le 3 o 5 schede
+		$sql="SELECT numJudges FROM tournament WHERE idTournament='".$_COOKIE["idTournament"]."'";
+		$result=mysql_query($sql);
+		$row=mysql_fetch_array($result);
+		$numJudges=$row["numJudges"];
+		
+		//estraggo tutti gli id delle pair
+		$sql="SELECT idPair FROM pair 
+		INNER JOIN poule ON pair.poule=poule.idPoule
+		INNER JOIN katatype ON poule.katatype=katatype.idKatatype
+		WHERE katatype='".$_GET["idKatatype"]."' AND tournament='".$_COOKIE["idTournament"]."' AND type='F'
+		ORDER BY numOrder";
+		$result=mysql_query($sql);
+		//echo $sql;
+		while($row=mysql_fetch_array($result))
+		{
+			for($i=1; $i<=$numJudges; $i++)
+			{
+				$sql="INSERT INTO form (num,pair) VALUES('$i','".$row["idPair"]."')";
+				$resultInser=mysql_query($sql);
+			}
+		}
+	}
+}
+if(isset($_POST["closedraw"]))
+{	
+	//estraggo gli id della finale
+	$sql="SELECT idPoule FROM poule WHERE katatype='".$_GET["idKatatype"]."' AND tournament='".$_COOKIE["idTournament"]."' AND type='F'";
+	$result=mysql_query($sql);
+	$row=mysql_fetch_array($result);
+	$idPouleF=$row["idPoule"];
+	
+	$vetJudoka=null;
+	$vetNumOrder=null;
+	$countRandomNum = $_POST["countRandomNum"];
+	for($i=0; $i<$countRandomNum; $i++)
+	{
+		$vetJudoka[]=$_POST["idJudoka".$i];
+		$vetNumOrder[]=$_POST["randomNum".$i];
+	}
+	
+	for($i=0; $i<count($vetJudoka); $i++)
+	{
+		$sql="INSERT INTO pair (judoka,poule,numorder,place) VALUES(
+		'".$vetJudoka[$i]."',
+		'".$idPouleF."',
+		'".$vetNumOrder[$i]."',
+		'99'
+		)";
+		$result=mysql_query($sql);
+	}
+	
+	//aggiungo le form
+	//inserisco le 3 o 5 schede
+	$sql="SELECT numJudges FROM tournament WHERE idTournament='".$_COOKIE["idTournament"]."'";
+	$result=mysql_query($sql);
+	$row=mysql_fetch_array($result);
+	$numJudges=$row["numJudges"];
+	//estraggo tutti gli id delle pair
+	$sql="SELECT idPair FROM pair 
+	INNER JOIN poule ON pair.poule=poule.idPoule
+	INNER JOIN katatype ON poule.katatype=katatype.idKatatype
+	WHERE katatype='".$_GET["idKatatype"]."' AND tournament='".$_COOKIE["idTournament"]."' AND type='F'
+	ORDER BY numOrder";
+	$result=mysql_query($sql);
+	//echo $sql;
+	while($row=mysql_fetch_array($result))
+	{
+		for($i=1; $i<=$numJudges; $i++)
+		{
+			$sql="INSERT INTO form (num,pair) VALUES('$i','".$row["idPair"]."')";
+			$resultInser=mysql_query($sql);
+		}
+	}
+}
+if(isset($_POST["deletedrawrequest"]))
+{	
+	$sql="SELECT idForm FROM form
+	INNER JOIN pair ON form.pair=pair.idPair
+	INNER JOIN poule ON pair.poule=poule.idPoule
+	WHERE katatype='".$_GET["idKatatype"]."' AND tournament='".$_COOKIE["idTournament"]."' AND type='F'";
+	$result=mysql_query($sql);
+	while($row=mysql_fetch_array($result))
+	{
+		$sql="DELETE FROM form WHERE idForm='".$row["idForm"]."'";
+		$resultDelete=mysql_query($sql);
+	}
+	 
+	//estraggo gli id dela finale
+	$sql="SELECT idPoule FROM poule WHERE katatype='".$_GET["idKatatype"]."' AND tournament='".$_COOKIE["idTournament"]."' AND type='F'";
+	$result=mysql_query($sql);
+	$row=mysql_fetch_array($result);
+	$idPoule=$row["idPoule"];
+	
+	//elimino
+	$sql="DELETE FROM pair WHERE poule='".$idPoule."'";
+	$resultDelete=mysql_query($sql);
+	
+	echo "DELETED FINAL";
+}
+
+?>
+
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../style.css">
+<script type="text/javascript" src="draw.js"></script>
+</head>
+<body onload='initCrono();'>
+
+
+<?php
+require_once "../top.php";
+?>
+<form method='post'>
+<?php
+
+//stampo nome kata
+$sql="SELECT * FROM katatype WHERE idKatatype='".$_GET["idKatatype"]."'";
+$result=mysql_query($sql);
+$row=mysql_fetch_array($result);
+echo $row["name"]."<br>";
+
+$validate=false;
+$sql="SELECT * FROM form
+INNER JOIN pair ON form.pair=pair.idPair
+INNER JOIN poule ON pair.poule=poule.idPoule
+WHERE katatype='".$_GET["idKatatype"]."' AND tournament='".$_COOKIE["idTournament"]."' AND type='F'
+GROUP BY type";
+$resultValidate=mysql_query($sql);
+if(mysql_num_rows($resultValidate)!=0)
+	$validated=true;
+
+if(!$validated)
+	echo "<input type='submit' name='closedraw' value='close draw'/>";
+else
+	echo "<input type='submit' name='deletedrawrequest' value='delete draw' onclick=\"return confirm('Confirm delete?')\"/>";
+
+
+if(!$validated)
+{
+	?>
+	<table border='1'>
+	<tr>
+		<td width='400' align='center'>judokas</td>
+		<td align='center' colspan='2'>country</td>
+		<td align='center'></td>
+	</tr>
+	<?php
+	$sql="(SELECT * FROM judoka 
+	INNER JOIN pair ON judoka.idJudoka=pair.judoka
+	INNER JOIN poule ON pair.poule=poule.idPoule
+	WHERE poule.katatype='".$_GET["idKatatype"]."' AND poule.tournament='".$_COOKIE["idTournament"]."' AND type='A'
+	ORDER BY place
+	LIMIT 3
+	)UNION(
+	SELECT * FROM judoka 
+	INNER JOIN pair ON judoka.idJudoka=pair.judoka
+	INNER JOIN poule ON pair.poule=poule.idPoule
+	WHERE poule.katatype='".$_GET["idKatatype"]."' AND poule.tournament='".$_COOKIE["idTournament"]."' AND type='B'
+	ORDER BY place
+	LIMIT 3)";
+	$result=mysql_query($sql);
+	$i=0;
+	while($row=mysql_fetch_array($result))
+	{
+
+		echo "<tr>";
+		echo "<td>".$row["namesurname"]."</td>";
+		echo "<td align='center'>".$row["country"]."</td>";
+		////stampo bandiera
+		if($row["enableFlag"]=="1")
+		{
+			$sql = "SELECT LOWER(iso2) AS iso2 FROM country_t WHERE ioc = UPPER('".$row["country"]."')";
+			$rsd = mysql_query($sql);
+			$rs = mysql_fetch_array($rsd);
+			if($rs['iso2']==null) $src="flag/blank.png";
+			else $src="../flag/".$rs['iso2'].".png";
+		}
+		else
+			$src="../flag/noflag.png";
+		echo "<td><input type='hidden' size='3' name='idJudoka".($i)."' value='".$row["idJudoka"]."'/>
+		<input type='text' align='center' size='3' name='randomNum".($i)."' id='randomNum".($i)."' value='".($i+1)."'/></td>";
+		echo "</tr>";
+		$i++;
+	}
+	//non ho teste di serie
+	echo "</table>";
+	echo "<input type='hidden' name='countRandomNum' id='countRandomNum' value='$i'/>";
+	echo "<input type='hidden' name='countTotalNum' id='countRandomNum' value='$i'/>";
+	echo "<input type='button' id='startStopButton' onclick='startStopCrono()' value='start' />";
+}
+else
+{
+	?>
+	<table border='1'>
+	<tr>
+		<td width='400' align='center'>judokas</td>
+		<td align='center' colspan='2'>country</td>
+	</tr>
+	<?php
+	$sql="SELECT * FROM judoka 
+	INNER JOIN pair ON judoka.idJudoka=pair.judoka
+	INNER JOIN poule ON pair.poule=poule.idPoule
+	WHERE poule.katatype='".$_GET["idKatatype"]."' AND poule.tournament='".$_COOKIE["idTournament"]."' AND type='F'
+	ORDER BY numOrder";
+	$result=mysql_query($sql);
+	//stampo le tabelle in base alla poule
+	while($row=mysql_fetch_array($result))
+	{
+
+		echo "<tr>";
+		echo "<td>".$row["namesurname"]."</td>";
+		echo "<td align='center'>".$row["country"]."</td>";
+		////stampo bandiera
+		if($row["enableFlag"]=="1")
+		{
+			$sql = "SELECT LOWER(iso2) AS iso2 FROM country_t WHERE ioc = UPPER('".$row["country"]."')";
+			$rsd = mysql_query($sql);
+			$rs = mysql_fetch_array($rsd);
+			if($rs['iso2']==null) $src="flag/blank.png";
+			else $src="../flag/".$rs['iso2'].".png";
+		}
+		else
+			$src="../flag/noflag.png";
+		echo "<td><img src='$src'></td>";
+		echo "</tr>";
+	}
+	echo "</table>";
+}
+
+
+?>
+</form>
+
+</body>
+</html>

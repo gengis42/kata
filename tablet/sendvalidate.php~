@@ -1,0 +1,8 @@
+<?php
+require_once "../config.inc.php";
+if(isset($_POST["pos"]))
+{
+	$sql="UPDATE form SET p".($_POST["pos"]+1)."='".$_POST["value"]."' WHERE idForm='391'";
+	$result=mysql_query($sql);
+}
+?>
