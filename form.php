@@ -15,9 +15,17 @@ if(isset($_POST["validate"]))
 	$str=null;
 	for($i=1; $i<=23; $i++)
 	{
-		if(isset($_POST["point1_$i"]))
-			$str[]="".$_POST["point1_$i"].$_POST["point2_$i"].$_POST["point3_$i"].$_POST["point4_$i"].$_POST["point5_$i"];
-		else
+		if(isset($_POST["point1_$i"])) {
+            $score = "".$_POST["point1_$i"].$_POST["point2_$i"].$_POST["point3_$i"].$_POST["point4_$i"].$_POST["point5_$i"];
+            if ($_POST["ph_$i"] == 0.5)
+                $score .= "p";
+            else if ($_POST["ph_$i"] == -0.5)
+                $score .= "m";
+            else
+                $score .= "e";
+
+            $str[] = $score;
+        } else
 			$str[] = null;
 	}
 
@@ -142,6 +150,7 @@ judge: <select id='judge' name='judge' onchange="checkDuplicatedJudge('<?php ech
 	<td align='center' style='font-size:9px;' width='50'>Medium<br>Mistakes</td>
 	<td align='center' style='font-size:9px;' width='50'>Big / Wrong<br>technique</td>
 	<td align='center' style='font-size:9px;' width='50'>Forgotten<br>technique</td>
+    <td align='center' style='font-size:9px;' width='50'>Halved<br>point</td>
 </tr>
 <?php
 
@@ -157,17 +166,20 @@ while($row = $result->fetch(PDO::FETCH_ASSOC))
 	for($id=1; $id<=$numTechniques; $id++)
 	{
 		$vetPoint=$row['p'.$id];
-		if(strlen($vetPoint)==5)
+		if(strlen($vetPoint)==6)
 		{
 			$point1=substr($vetPoint,0,1);
 			$point2=substr($vetPoint,1,1);
 			$point3=substr($vetPoint,2,1);
 			$point4=substr($vetPoint,3,1);
 			$point5=substr($vetPoint,4,1);
+            $halved=halvedStringToFloat(substr($vetPoint,5,1));
+
 		}
 		else
 		{
 			$point1=$point2=$point3=$point4=$point5=0;
+            $halved = 0.0;
 		}
 	
 		//imposto le immagini in base al punteggio
@@ -192,6 +204,7 @@ while($row = $result->fetch(PDO::FETCH_ASSOC))
 		<input type="hidden" name="point3_<?php echo $id; ?>" id="point3_<?php echo $id; ?>" class="text" value="<?php echo $point3; ?>"/>
 		<input type="hidden" name="point4_<?php echo $id; ?>" id="point4_<?php echo $id; ?>" class="text" value="<?php echo $point4; ?>"/>
 		<input type="hidden" name="point5_<?php echo $id; ?>" id="point5_<?php echo $id; ?>" class="text" value="<?php echo $point5; ?>"/>
+            <input type="hidden" name="ph_<?php echo $id; ?>" id="ph_<?php echo $id; ?>" class="text" value="<?php echo $halved; ?>"/>
 		<?php echo $id; ?>
 		</td>
 		<!--stampo nomi delle tecniche-->
@@ -201,6 +214,7 @@ while($row = $result->fetch(PDO::FETCH_ASSOC))
 		<td align='center'><img id="img3_<?php echo $id; ?>" src="<?php echo $image3; ?>"></td>
 		<td align='center'><img id="img4_<?php echo $id; ?>" src="<?php echo $image4; ?>"></td>
 		<td align='center'><img id="img5_<?php echo $id; ?>" src="<?php echo $image5; ?>"></td>
+        <td align='center'><div id="divh_<?php echo $id; ?>"><?php echo $halved; ?></td>
 		<td align='center'><div id="pt_<?php echo $id; ?>"></div></td>
 		</tr>
 	<?php

@@ -102,6 +102,19 @@ function keyboardEvents(e)
 					$("#img5_"+index).attr("src",'image/wrong.png');
 				}
 				break;
+
+            case 81: //q
+                $("#ph_"+index).val(0.5);
+                $("#divh_"+index).text("+0.5");
+                break;
+            case 65: //a
+                $("#ph_"+index).val(0.0);
+                $("#divh_"+index).text("0.0");
+                break;
+            case 90: //z
+                $("#ph_"+index).val(-0.5);
+                $("#divh_"+index).text("-0.5");
+                break;
 		}
 	}
 	updateCont();
@@ -122,23 +135,27 @@ function updateCont()
   	var i;
   	var name;
   	var val; //valore corrent
-  	var p1, p2, p3, p4, p5;
+  	var p1, p2, p3, p4, p5, ph;
   	
   	points = new Array();
   	
-  	for(i=0; i<((all.length -1)/5); i++)
+  	for(i=0; i<((all.length -1)/6); i++)
   	{
-  		p1=all[i*5 + 0].value;
-  		p2=all[i*5 + 1].value;
-  		p3=all[i*5 + 2].value;
-  		p4=all[i*5 + 3].value;
-  		p5=all[i*5 + 4].value;
+  		p1=all[i*6 + 0].value;
+  		p2=all[i*6 + 1].value;
+  		p3=all[i*6 + 2].value;
+  		p4=all[i*6 + 3].value;
+  		p5=all[i*6 + 4].value;
+        ph=all[i*6 + 5].value;
   		
   		val = 10 - p1 - p2 - 3*p3 - 5*p4;
   		if(p1==1 && p2==1 && p3==1 && p4==1)
-  			val = 1;
+  			val = 1.0;
   		if(p5==1)
-  			val=0;
+  			val=0.0;
+  		else {
+  			val += 1.0*ph;
+		}
   		points[i]=val;
   		$("#pt_"+ (i+1)).html(val);
   	}
@@ -175,14 +192,14 @@ function updateCont()
   	$("#contForgotten").html(contForgotten);
 
   	
-  	var punteggio = 0;
+  	var punteggio = 0.0;
   	for(i=0; i<points.length; i++)
   		punteggio += points[i];
   	
   	if(contForgotten>0) {
   		punteggio = Math.round(punteggio / 2);
   	} else {
-  		punteggio = parseInt(punteggio) + parseInt(fcr.value);
+  		punteggio = parseFloat(punteggio) + parseFloat(fcr.value);
   	}	
   		  	
   	$("#total").html(punteggio);

@@ -2,6 +2,13 @@
 
 //require_once "config.inc.php";
 
+function halvedStringToFloat($h) {
+	if ($h == 'p')
+		return "+0.5";
+    if ($h == 'm')
+        return "-0.5";
+    return "0.0";
+}
 
 function getNumTechniquesFromIdForm($idF)
 {
@@ -20,25 +27,26 @@ function getNumTechniquesFromIdForm($idF)
 
 function convertStringZerotoPoint($srt)
 {
-	if(strlen($srt)==5)
+	if(strlen($srt)==6)
 	{
 		$pen1=substr($srt,0,1);
 		$pen2=substr($srt,1,1);
 		$pen3=substr($srt,2,1);
 		$pen4=substr($srt,3,1);
 		$pen5=substr($srt,4,1);
+		$halved = halvedStringToFloat(substr($srt,5,1));
 	}
 	else
 	{
 		$pen1=$pen2=$pen3=$pen4=$pen5=0;
 	}
 	
-	
-	$p=10-$pen1-$pen2-3*$pen3-5*$pen4;
+	$p = 0.0 + 10-$pen1-$pen2-3*$pen3-5*$pen4 + $halved;
 	if($pen1 == 1 and $pen2 == 1 and $pen3 == 1 and $pen4 == 1)
-		$p=1;
+		$p= 1.0 + $halved;
 	if($pen5==1)
-		$p=0;	
+		$p= 0.0;
+
 	return $p;
 }
 
@@ -63,13 +71,15 @@ function countAndSaveFormPoint($idForm)
 		for($id=1; $id<=$numMaxTechniques; $id++)
 		{
 			$vetPen=$row['p'.$id];
-			if(strlen($vetPen)==5)
+			if(strlen($vetPen) == 6)
 			{
 				$pen1=substr($vetPen,0,1);
 				$pen2=substr($vetPen,1,1);
 				$pen3=substr($vetPen,2,1);
 				$pen4=substr($vetPen,3,1);
 				$pen5=substr($vetPen,4,1);
+
+                $halved = halvedStringToFloat(substr($vetPen,5,1));
 			}
 			else
 			{
@@ -77,11 +87,11 @@ function countAndSaveFormPoint($idForm)
 			}
 			
 			if($pen5==1)
-				$p[]=0;
+				$p[] = 0.0;
 			elseif($pen1 == 1 and $pen2 == 1 and $pen3 == 1 and $pen4 == 1)
-				$p[] = 1;
+				$p[] = 1.0 + $halved;
 			else
-				$p[]=10-$pen1-$pen2-3*$pen3-5*$pen4;
+				$p[] = 0.0 + 10-$pen1-$pen2-3*$pen3-5*$pen4 + $halved;
 				
 			if($pen1==1) $countSmall++;
 			if($pen2==1) $countSmall++;
@@ -91,12 +101,12 @@ function countAndSaveFormPoint($idForm)
 		}
 	}
 	
-	$tot=0;
+	$tot=0.0;
 	if($countForgotten==0)
 	{
 		for($i=0; $i<$numMaxTechniques; $i++)
-			$tot+=$p[$i];
-		$tot+=$fcr;
+			$tot += $p[$i];
+		$tot += $fcr;
 	}
 	else
 	{
@@ -186,20 +196,16 @@ function validatePair($idPair)
 		$result->execute();
 		while($row = $result->fetch(PDO::FETCH_ASSOC))
 		{
-			
 			$tmparray[] = $row["fcr"];
 			for($id=1; $id<=$numMaxTechniques; $id++)
 			{
-				$number = convertStringZerotoPoint($row['p'.$id]);
+				$number = 0.0 + convertStringZerotoPoint($row['p'.$id]);
 				if($number == 0)
 					$countforgotten++;
 
 				$tmparray[] = $number;
 			}
-
-
 		}
-
 		$arrayScoreForms[] = $tmparray;
 	}
 
@@ -218,7 +224,7 @@ function validatePair($idPair)
 	}
 
 	
-	$sum=0;
+	$sum=0.0;
 	for($i=1; $i<=$numMaxTechniques; $i++){
 		if($numJudges == 3)
 			$sum += array_sum($matrix[$i]);
@@ -248,21 +254,21 @@ function validatePair($idPair)
 		$score[]=$row["tot"];
 	}
 
-	$sql="SELECT numJudges FROM pair INNER JOIN poule ON pair.poule=poule.idPoule WHERE idPair = :pair";
-	$result = $db->prepare($sql);
-	$result->bindValue(':pair', $idPair);
-	$result->execute();
-	$row = $result->fetch(PDO::FETCH_ASSOC);
-	if($row["numJudges"] == "5")
-	{
-		$tot=$score[0]+$score[1]+$score[2]+$score[3]+$score[4];
-		$tot-=max($score);
-		$tot-=min($score);
-	}
-	else //3
-	{
-		$tot=$score[0]+$score[1]+$score[2]+$score[3]+$score[4];
-	}
+//	$sql="SELECT numJudges FROM pair INNER JOIN poule ON pair.poule=poule.idPoule WHERE idPair = :pair";
+//	$result = $db->prepare($sql);
+//	$result->bindValue(':pair', $idPair);
+//	$result->execute();
+//	$row = $result->fetch(PDO::FETCH_ASSOC);
+//	if($row["numJudges"] == "5")
+//	{
+//		$tot=$score[0]+$score[1]+$score[2]+$score[3]+$score[4];
+//		$tot-=max($score);
+//		$tot-=min($score);
+//	}
+//	else //3
+//	{
+//		$tot=$score[0]+$score[1]+$score[2]+$score[3]+$score[4];
+//	}
 	
 	
 	$sql="UPDATE pair SET score1 = :score1, score2 = :score2, score3 = :score3, score4 = :score4, score5 = :score5, scoreTot = :tot WHERE idPair = :idPair";
