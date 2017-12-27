@@ -15,13 +15,13 @@ for($i=0; $i<count($arrayJud); $i++){
 		$result->bindValue(':judge', null);
 	}
 	$result->bindValue(':grouporder', $i+1);
-	$result->execute();
+	$ret1 = $result->execute();
 }
 
 //se non ci sono errori scrivo nei form
 if($_POST["writeOnForms"] == "true"){
-	
-	
+
+
 	$sql="SELECT idForm FROM form INNER JOIN tablet ON form.tablet = tablet.idTablet WHERE tablet.tgroup = :tgroup AND tablet.grouporder = :grouporder";
 	$result = $db->prepare($sql);
 	$result->bindValue(':tgroup', $_POST["group"]);
@@ -39,15 +39,21 @@ if($_POST["writeOnForms"] == "true"){
 				else
 					$resultUpdate->bindValue(':judge', null);
 				$resultUpdate->bindValue(':form', $row["idForm"]);
-				$resultUpdate->execute();
+				$ret2 = $resultUpdate->execute();
 			}
 		//}
 	}
 }
 
-if($errore)
-    echo "errore";
+if($ret1)
+		echo "ok\n";
 else
-    echo "ok";
+		echo "errore\n";
 
+if(isset($ret2)){
+		if($ret2)
+				echo "forms: ok\n";
+		else
+				echo "forms: errore\n";
+}
 ?>
