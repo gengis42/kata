@@ -11,7 +11,7 @@ if(isset($_POST["validate"]))
 		$judgeId = null;
 	else
 		$judgeId = $_POST["judge"];
-	
+
 	$str=null;
 	for($i=1; $i<=23; $i++)
 	{
@@ -29,8 +29,8 @@ if(isset($_POST["validate"]))
 			$str[] = null;
 	}
 
-	$sql="UPDATE form SET p1 = :p1, p2 = :p2, p3 = :p3, p4 = :p4, p5 = :p5, p6 = :p6, p7 = :p7, p8 = :p8, p9 = :p9, p10 = :p10, p11 = :p11, p12 = :p12, p13 = :p13, 
-	p14 = :p14, p15 = :p15, p16 = :p16, p17 = :p17, p18 = :p18, p19 = :p19, p20 = :p20, p21 = :p21, p22 = :p22, p23 = :p23, fcr = :fcr, judge = :judge 
+	$sql="UPDATE form SET p1 = :p1, p2 = :p2, p3 = :p3, p4 = :p4, p5 = :p5, p6 = :p6, p7 = :p7, p8 = :p8, p9 = :p9, p10 = :p10, p11 = :p11, p12 = :p12, p13 = :p13,
+	p14 = :p14, p15 = :p15, p16 = :p16, p17 = :p17, p18 = :p18, p19 = :p19, p20 = :p20, p21 = :p21, p22 = :p22, p23 = :p23, fcr = :fcr, judge = :judge
 	WHERE idForm = :idForm";
 	$result = $db->prepare($sql);
 	$result->bindValue(':p1', $str[0]);
@@ -181,7 +181,7 @@ while($row = $result->fetch(PDO::FETCH_ASSOC))
 			$point1=$point2=$point3=$point4=$point5=0;
             $halved = 0.0;
 		}
-	
+
 		//imposto le immagini in base al punteggio
 		if($point1==0) $image1="image/correct.png";
 		else $image1="image/wrong.png";
@@ -194,7 +194,7 @@ while($row = $result->fetch(PDO::FETCH_ASSOC))
 		if($point5==0) $image5="image/correct.png";
 		else $image5="image/wrong.png";
 	?>
-		
+
 		<tr id="tr_<?php echo $id; ?>" class="edit_tr">
 
 		<td class="edit_td">
@@ -275,5 +275,7 @@ alertJudge();
 </script>
 
 </body>
+
+<p>Usa [1-5] per modificare gli errori e [qaz] per il mezzo punto.</p>
 
 </html>

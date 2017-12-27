@@ -13,7 +13,7 @@ function halvedStringToFloat($h) {
 function getNumTechniquesFromIdForm($idF)
 {
 	global $db;
-	$sql="SELECT numTechniques FROM 
+	$sql="SELECT numTechniques FROM
 	form INNER JOIN pair ON form.pair=pair.idPair
 	INNER JOIN poule ON pair.poule=poule.idPoule
 	INNER JOIN katatype ON poule.katatype=katatype.idKatatype
@@ -38,9 +38,9 @@ function convertStringZerotoPoint($srt)
 	}
 	else
 	{
-		$pen1=$pen2=$pen3=$pen4=$pen5=0;
+		$pen1=$pen2=$pen3=$pen4=$pen5=$halved=0;
 	}
-	
+
 	$p = 0.0 + 10-$pen1-$pen2-3*$pen3-5*$pen4 + $halved;
 	if($pen1 == 1 and $pen2 == 1 and $pen3 == 1 and $pen4 == 1)
 		$p= 1.0 + $halved;
@@ -58,9 +58,9 @@ function countAndSaveFormPoint($idForm)
 	$countMedium=0;
 	$countWrong=0;
 	$countForgotten=0;
-	
+
 	$p=null;
-	
+
 	$sql="SELECT * FROM form WHERE idForm = :idForm";
 	$result = $db->prepare($sql);
 	$result->bindValue(':idForm', $idForm);
@@ -79,20 +79,20 @@ function countAndSaveFormPoint($idForm)
 				$pen4=substr($vetPen,3,1);
 				$pen5=substr($vetPen,4,1);
 
-                $halved = halvedStringToFloat(substr($vetPen,5,1));
+        $halved = halvedStringToFloat(substr($vetPen,5,1));
 			}
 			else
 			{
-				$pen1=$pen2=$pen3=$pen4=$pen5=0;
+				$pen1=$pen2=$pen3=$pen4=$pen5=$halved=0;
 			}
-			
+
 			if($pen5==1)
 				$p[] = 0.0;
 			elseif($pen1 == 1 and $pen2 == 1 and $pen3 == 1 and $pen4 == 1)
 				$p[] = 1.0 + $halved;
 			else
 				$p[] = 0.0 + 10-$pen1-$pen2-3*$pen3-5*$pen4 + $halved;
-				
+
 			if($pen1==1) $countSmall++;
 			if($pen2==1) $countSmall++;
 			if($pen3==1) $countMedium++;
@@ -100,7 +100,7 @@ function countAndSaveFormPoint($idForm)
 			if($pen5==1) $countForgotten++;
 		}
 	}
-	
+
 	$tot=0.0;
 	if($countForgotten==0)
 	{
@@ -114,7 +114,7 @@ function countAndSaveFormPoint($idForm)
 			$tot+=$p[$i];
 		$tot=$tot/2;
 	}
-	
+
 	$sql="UPDATE form SET totSmall = :totSmall, totMedium = :totMedium, totWrong = :totWrong, totForgotten = :totForgotten, tot = :tot WHERE idForm = :idForm";
 	$result = $db->prepare($sql);
 	$result->bindValue(':totSmall', $countSmall);
@@ -169,7 +169,7 @@ function validatePair($idPair)
 
 	$arrayIdForms = array();
 	// 1 | 2 | 3 | 4 | 5 | tot | place
-	
+
 	//per le 5 schede faccio i conti anche se non servono più
 	$sql="SELECT idForm FROM form WHERE pair = :pair";
 	$result = $db->prepare($sql);
@@ -189,7 +189,7 @@ function validatePair($idPair)
 	$sql="SELECT * FROM form WHERE idForm = :idForm";
 	$result = $db->prepare($sql);
 	for($i=0; $i<count($arrayIdForms); $i++){
-		
+
 		$tmparray = array();
 
 		$result->bindValue(':idForm', $arrayIdForms[$i]);
@@ -223,7 +223,7 @@ function validatePair($idPair)
 		$matrix[] = $tmparray;
 	}
 
-	
+
 	$sum=0.0;
 	for($i=1; $i<=$numMaxTechniques; $i++){
 		if($numJudges == 3)
@@ -243,7 +243,7 @@ function validatePair($idPair)
 			else
 				$sum += array_sum($matrix[0]) - max($matrix[0]) - min($matrix[0]);
 	}
-		
+
 	$score = array();
 	$sql="SELECT idForm, num, tot FROM form WHERE pair = :pair ORDER BY num";
 	$result = $db->prepare($sql);
@@ -269,20 +269,21 @@ function validatePair($idPair)
 //	{
 //		$tot=$score[0]+$score[1]+$score[2]+$score[3]+$score[4];
 //	}
-	
-	
+
+
 	$sql="UPDATE pair SET score1 = :score1, score2 = :score2, score3 = :score3, score4 = :score4, score5 = :score5, scoreTot = :tot WHERE idPair = :idPair";
 	$result = $db->prepare($sql);
 	$result->bindValue(':score1', $score[0]);
 	$result->bindValue(':score2', $score[1]);
 	$result->bindValue(':score3', $score[2]);
-	$result->bindValue(':score4', $score[3]);
-	$result->bindValue(':score5', $score[4]);
+	$result->bindValue(':score4', isset($score[3]) ? $score[3] : NULL);
+	$result->bindValue(':score5', isset($score[4]) ? $score[4] : NULL);
+
 	//$result->bindValue(':tot', $tot);
 	$result->bindValue(':tot', $sum);
 	$result->bindValue(':idPair', $idPair);
 	$result->execute();
-	
+
 }
 
 function validatePairOLD($idPair)
@@ -295,8 +296,8 @@ function validatePairOLD($idPair)
 	$result->execute();
 	while($row = $result->fetch(PDO::FETCH_ASSOC))
 		countAndSaveFormPoint($row["idForm"]);
-		
-		
+
+
 	$str="";
 	$sql="SELECT idForm, num, tot FROM form WHERE pair = :pair ORDER BY num";
 	$result = $db->prepare($sql);
@@ -328,8 +329,8 @@ function validatePairOLD($idPair)
 		//$tot-=min($score);
 		$str=$str.$tot;
 	}
-	
-	
+
+
 	$sql="UPDATE pair SET score1 = :score1, score2 = :score2, score3 = :score3, score4 = :score4, score5 = :score5, scoreTot = :tot WHERE idPair = :idPair";
 	$result = $db->prepare($sql);
 	$result->bindValue(':score1', $score[0]);
@@ -341,14 +342,14 @@ function validatePairOLD($idPair)
 	$result->bindValue(':idPair', $idPair);
 	$result->execute();
 	return $str;
-	
+
 }
 
 function getArrayKataFromIdForm($idForm)
 {
 	global $db;
 	//metto su vettore i nomi delle tecniche
-	$sql="SELECT katatype.idKatatype FROM 
+	$sql="SELECT katatype.idKatatype FROM
 	form INNER JOIN pair ON form.pair=pair.idPair
 	INNER JOIN poule ON pair.poule=poule.idPoule
 	INNER JOIN katatype ON poule.katatype=katatype.idKatatype
@@ -357,19 +358,19 @@ function getArrayKataFromIdForm($idForm)
 	$result->bindValue(':idForm', $idForm);
 	$result->execute();
 	$row = $result->fetch(PDO::FETCH_ASSOC);
-	
+
 	$sql="SELECT * FROM katatype WHERE idKatatype = :idKatatype";
 	$result = $db->prepare($sql);
 	$result->bindValue(':idKatatype', $row["idKatatype"]);
 	$result->execute();
 	$row = $result->fetch(PDO::FETCH_ASSOC);
-	
+
 	$num=$row["numTechniques"];
 	for($i=1; $i<=$num; $i++)
 		$name[]=$row["t".$i];
-	
+
 	$name[]=$row["fcr"];
-	
+
 	return $name;
 }
 
@@ -390,7 +391,7 @@ function updateAndSavePoulePlace($idPoule)
 	{
 		$order[]=$row["idPair"];
 	}
-	
+
 	//ora ho l'ordine delle coppie
 	$sql="UPDATE pair SET place = :place WHERE idPair = :idPair";
 	$result = $db->prepare($sql);
@@ -400,7 +401,7 @@ function updateAndSavePoulePlace($idPoule)
 		$result->bindValue(':idPair', $order[$i]);
 		$result->execute();
 	}
-	
+
 }
 
 function mixArray($vet)
