@@ -10,7 +10,7 @@ function checkDuplicatedJudge(idForm, idJudge)
 			}
 		}
 	});
-	
+
 }
 
 function keyboardEvents(e)
@@ -25,7 +25,7 @@ function keyboardEvents(e)
 			index--;
 			$("#tr_"+index).css('background-color', '#0066FF');
 		}
-		
+
 	}
 	else if(e.keyCode==40)
 	{
@@ -117,17 +117,43 @@ function keyboardEvents(e)
                 break;
 		}
 	}
+	validateRow(index);
 	updateCont();
+}
+
+function validateRow(index) {
+	var errors = [];
+	var images = $("[id^=img][id$=_"+index+"]");
+	for (var i = 0; i < images.length; i++)
+		errors.push(images[i].src.indexOf('wrong') !== -1);
+	if (!errors[0] && !errors[1] && !errors[2] && !errors[3] && !errors[4]) { //on perfect no up
+		if ($("#ph_"+index).val() == 0.5) {
+			$("#ph_"+index).val(0.0);
+			$("#divh_"+index).text("0.0");
+		}
+	}
+	if (errors[0] && errors[1] && errors[2] && errors[3]) { //on special reset halved
+			$("#ph_"+index).val(0.0);
+			$("#divh_"+index).text("0.0");
+	}
+	if (errors[4]) { //on forgotten reset other errors and halved
+		for (var j = 0; j < images.length - 1; j++) {
+			images[j].src = 'image/correct.png';
+			$("#point"+(j+1)+"_"+index).val(0);
+		}
+		$("#ph_"+index).val(0.0);
+		$("#divh_"+index).text("0.0");
+	}
 }
 
 function updateCont()
 {
-	
+
 	var contSmall=0;
 	var contMedium=0;
 	var contBig=0;
 	var contForgotten=0;
-	
+
 	var all=document.getElementsByTagName("input");
 	//unfocus di fcr
 	var fcr=document.getElementById("fcr");
@@ -136,9 +162,9 @@ function updateCont()
   	var name;
   	var val; //valore corrent
   	var p1, p2, p3, p4, p5, ph;
-  	
+
   	points = new Array();
-  	
+
   	for(i=0; i<((all.length -1)/6); i++)
   	{
   		p1=all[i*6 + 0].value;
@@ -147,7 +173,7 @@ function updateCont()
   		p4=all[i*6 + 3].value;
   		p5=all[i*6 + 4].value;
         ph=all[i*6 + 5].value;
-  		
+
   		val = 10 - p1 - p2 - 3*p3 - 5*p4;
   		if(p1==1 && p2==1 && p3==1 && p4==1)
   			val = 1.0;
@@ -159,7 +185,7 @@ function updateCont()
   		points[i]=val;
   		$("#pt_"+ (i+1)).html(val);
   	}
-  	
+
   	for (i=0; i<all.length; i++)
   	{
   		col=all[i].name.substr(7,1);
@@ -185,23 +211,24 @@ function updateCont()
 	  		}
 	  	}
   	}
-  	
+
   	$("#contSmall").html(contSmall);
   	$("#contMedium").html(contMedium);
   	$("#contBig").html(contBig);
   	$("#contForgotten").html(contForgotten);
 
-  	
+
   	var punteggio = 0.0;
   	for(i=0; i<points.length; i++)
   		punteggio += points[i];
-  	
+
+			console.log(punteggio);
   	if(contForgotten>0) {
-  		punteggio = Math.round(punteggio / 2);
+  		punteggio = punteggio / 2;
   	} else {
   		punteggio = parseFloat(punteggio) + parseFloat(fcr.value);
-  	}	
-  		  	
+  	}
+
   	$("#total").html(punteggio);
 }
 
